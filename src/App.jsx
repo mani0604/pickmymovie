@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MovieDetail from './components/MovieDetail';
 import './App.css';
 import MovieChat from './components/MovieChat';
@@ -12,6 +12,25 @@ function App() {
   const [error, setError] = useState('');
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [searchedQuery, setSearchedQuery] = useState('');
+
+  async function loadPopularMovies() {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}`
+      );
+      const data = await res.json();
+      if (data.results) setMovies(data.results);
+    } catch {
+      setError('Could not load popular movies.');
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => { loadPopularMovies(); }, []);
 
   async function searchMovies() {
     if (!query.trim()) return;
@@ -30,6 +49,8 @@ function App() {
         setError('No movies found. Try another title!');
       } else {
         setMovies(data.results);
+        setHasSearched(true);
+        setSearchedQuery(query);
       }
     } catch (err) {
       console.log('Error:', err);
@@ -48,7 +69,7 @@ function App() {
 
       {/* NAVBAR */}
       <nav className="navbar">
-        <div className="logo" onClick={() => {setMovies([]); setQuery(''); setError('');}} style={{cursor:'pointer'}}>
+        <div className="logo" onClick={() => { setQuery(''); setError(''); setHasSearched(false); setSearchedQuery(''); loadPopularMovies(); }} style={{cursor:'pointer'}}>
           🎬 PickMyMovie
         </div>
         <p className="tagline">Find your next favourite film</p>
@@ -71,7 +92,7 @@ function App() {
         </div>
       </div>
       {/* HERO DESCRIPTION — only show when no movies searched yet */}
-      {movies.length === 0 && !loading && (
+      {movies.length === 0 && !loading && !hasSearched && (
         <div className="hero-section">
 
           <div className="hero-text">
@@ -120,6 +141,11 @@ function App() {
       {error && <div className="status error">{error}</div>}
 
       {/* MOVIES GRID */}
+      {movies.length > 0 && (
+        <h2 className="movies-heading">
+          {hasSearched ? `Search Results for "${searchedQuery}"` : 'Popular Movies 🎬'}
+        </h2>
+      )}
       <div className="movies-grid">
         {movies.map(movie => (
           <div

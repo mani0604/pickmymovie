@@ -89,6 +89,15 @@ body {
   color: #e74c3c;
 }
 
+/* GRID HEADING */
+.movies-heading {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 1.5rem 0 0.5rem;
+}
+
 /* GRID */
 .movies-grid {
   display: grid;
