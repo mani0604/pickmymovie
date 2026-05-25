@@ -1,6 +1,6 @@
 import AIAnalysis from './AIAnalysis';
 
-function MovieDetail({ movie, onClose }) {
+function MovieDetail({ movie, onClose, inWatchlist, onToggleWatchlist }) {
   if (!movie) return null;
 
   return (
@@ -31,6 +31,12 @@ function MovieDetail({ movie, onClose }) {
               <span>📅 {movie.release_date?.split('-')[0]}</span>
               <span>🗳️ {movie.vote_count?.toLocaleString()} votes</span>
             </div>
+
+            <button
+              className={`watchlist-toggle-btn${inWatchlist ? ' watchlist-toggle-btn--active' : ''}`}
+              onClick={onToggleWatchlist}>
+              {inWatchlist ? '❤️ In Watchlist' : '🤍 Add to Watchlist'}
+            </button>
 
             <p className="modal-overview">{movie.overview}</p>
 

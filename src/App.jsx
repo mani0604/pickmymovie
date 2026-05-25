@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import MovieDetail from './components/MovieDetail';
-import './App.css';
 import MovieChat from './components/MovieChat';
+import Watchlist from './components/Watchlist';
+import { useWatchlist } from './useWatchlist';
+import './App.css';
 
 import { TMDB_KEY } from './config';
 
@@ -12,8 +14,10 @@ function App() {
   const [error, setError] = useState('');
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [watchlistOpen, setWatchlistOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchedQuery, setSearchedQuery] = useState('');
+  const { watchlist, toggle, isInWatchlist } = useWatchlist();
 
   async function loadPopularMovies() {
     setLoading(true);
@@ -73,6 +77,12 @@ function App() {
           🎬 PickMyMovie
         </div>
         <p className="tagline">Find your next favourite film</p>
+        <button className="watchlist-nav-btn" onClick={() => setWatchlistOpen(true)}>
+          ❤️ Watchlist
+          {watchlist.length > 0 && (
+            <span className="watchlist-badge">{watchlist.length}</span>
+          )}
+        </button>
       </nav>
 
       {/* SEARCH */}
@@ -152,15 +162,23 @@ function App() {
             key={movie.id}
             className="movie-card"
             onClick={() => setSelectedMovie(movie)}>
-            <img
-              src={
-                movie.poster_path
-                  ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-                  : 'https://via.placeholder.com/300x450?text=No+Image'
-              }
-              alt={movie.title}
-              className="movie-poster"
-            />
+            <div className="movie-poster-wrap">
+              <img
+                src={
+                  movie.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                    : 'https://via.placeholder.com/300x450?text=No+Image'
+                }
+                alt={movie.title}
+                className="movie-poster"
+              />
+              <button
+                className={`heart-btn${isInWatchlist(movie.id) ? ' heart-btn--active' : ''}`}
+                onClick={e => { e.stopPropagation(); toggle(movie); }}
+                title={isInWatchlist(movie.id) ? 'Remove from watchlist' : 'Add to watchlist'}>
+                {isInWatchlist(movie.id) ? '❤️' : '🤍'}
+              </button>
+            </div>
             <div className="movie-info">
               <div className="movie-title">{movie.title}</div>
               <div className="movie-meta">
@@ -182,6 +200,8 @@ function App() {
         <MovieDetail
           movie={selectedMovie}
           onClose={() => setSelectedMovie(null)}
+          inWatchlist={isInWatchlist(selectedMovie.id)}
+          onToggleWatchlist={() => toggle(selectedMovie)}
         />
       )}
       {/* FLOATING CHAT BUTTON */}
@@ -194,6 +214,16 @@ function App() {
       {/* MOVIE CHAT */}
       {chatOpen && (
         <MovieChat onClose={() => setChatOpen(false)} />
+      )}
+
+      {/* WATCHLIST PANEL */}
+      {watchlistOpen && (
+        <Watchlist
+          watchlist={watchlist}
+          onClose={() => setWatchlistOpen(false)}
+          onSelectMovie={setSelectedMovie}
+          onToggle={toggle}
+        />
       )}
 
     </div>
